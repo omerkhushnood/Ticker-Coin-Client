@@ -1,0 +1,57 @@
+//
+// Scss variables.
+
+$prefix: "xee";
+
+// Fonts.
+$font-primary: 'Montserrat', sans-serif;
+$font-secondary: 'Roboto Mono', monospace;
+
+// Font sizes.
+$font-size-root: 16px;
+
+$font-size-xxxl: 80px;
+$font-size-xxl: 40px;
+$font-size-xl: 36px;
+$font-size-lg: 24px;
+$font-size-md: 20px;
+$font-size: 18px;
+$font-size-sm: 16px;
+$font-size-xs: 14px;
+$font-size-xxs: 12px;
+$font-size-xxxs: 10px;
+
+
+// Common colors.
+$color-red: #e64331;
+$color-green: #8acd25;
+$color-blue: #0f88f2;
+$color-yellow: #ffee33;
+$color-orange: #ff7615;
+$color-purple: purple;
+$color-pink: #f85f6b;
+
+$color-white: #ffffff;
+$color-gray-10: #ffffff;
+$color-gray-9: #f5f5f5;
+$color-gray-8: #efefef;
+$color-gray-7: #bbbbbb;
+$color-gray-6: #a5a5a5;
+$color-gray-5: #8a8a8a;
+$color-gray-4: #656565;
+$color-gray-3: #333333;
+$color-gray-2: #2b2b2b;
+$color-gray-1: #222222;
+$color-gray-0: #000000;
+$color-black: #000000;
+
+// Theme colors.
+$color-primary: #1f517f;
+$color-accent: #ffee33;
+$color-warn: #e64331;
+$color-text-light: $color-white;
+$color-text-dark: $color-black;
+
+$color-1: #25a898;
+$color-2: #335578;
+$color-3: $color-purple;

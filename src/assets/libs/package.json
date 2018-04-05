@@ -1,0 +1,16 @@
+{
+  "name": "vendor-libraries",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "omer <omer.khushnood@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "anychart": "^8.2.0",
+    "bootstrap": "^4.0.0",
+    "jquery": "^3.3.1"
+  }
+}

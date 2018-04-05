@@ -1,0 +1,40 @@
+//
+// Common styles.
+
+html{
+
+    font-size: $font-size-root;
+    font-family: $font-primary;
+    line-height: 1.375em;
+}
+
+body{
+
+    color: $color-gray-2;
+    font-size: $font-size-sm;
+    font-family: $font-primary;
+    line-height: 1.375em;
+    background-color: $color-white;
+    margin: 0;
+    padding: 0;
+}
+
+.ccxt-loader{
+
+    position: relative;
+
+    &:after{
+
+        content: '';
+        position: absolute;
+        z-index: 999999;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(#ffffff, 0.3);
+        background-image: url('../images/loader.gif');
+        background-repeat: no-repeat;
+        background-position: center center;
+    }
+}
