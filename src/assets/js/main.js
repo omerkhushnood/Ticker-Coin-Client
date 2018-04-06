@@ -13,6 +13,7 @@ jQuery(function(){
         var _TIMEFRAME_VALUE_SELECTOR = '#ccxt-timeframe-value';
         var _TIMEFRAME_UNIT_SELECTOR = '#ccxt-timeframe-unit';
         var _DATA_SINCE_SELECTOR = '#ccxt-data-since';
+        var _DATA_LIMIT_SELECTOR = '#ccxt-data-limit';
         var _PLOT_DATA_BUTTON_SELECTOR = '#ccxt-plot-data';
         var _INDICATOR_SELECT_SELECTOR = '#ccxt-indicator-select';
         var _INDICATOR_PLOT_SELECT_SELECTOR = '#ccxt-indicator-plot';
@@ -24,6 +25,7 @@ jQuery(function(){
         var timeframeValueInput = $(_TIMEFRAME_VALUE_SELECTOR);
         var timeframeUnitSelect = $(_TIMEFRAME_UNIT_SELECTOR);
         var dataSinceInput = $(_DATA_SINCE_SELECTOR);
+        var dataLimitInput = $(_DATA_LIMIT_SELECTOR);
         var plotDataButton = $(_PLOT_DATA_BUTTON_SELECTOR);
         var indicatorSelect = $(_INDICATOR_SELECT_SELECTOR);
         var indicatorPlotSelect = $(_INDICATOR_PLOT_SELECT_SELECTOR);
@@ -40,10 +42,12 @@ jQuery(function(){
 
             errorLogContainer.empty();
             errorLogContainer.text(err);
+            errorLogContainer.removeClass('tc-hidden');
         }
 
         function _clearErrorLog(){
 
+            errorLogContainer.addClass('tc-hidden');
             errorLogContainer.empty();
         }
 
@@ -64,6 +68,7 @@ jQuery(function(){
             });
 
             _clearErrorLog();
+            _ccxtSrvc.fetchMarkets(exchangeSelect.eq(0).val(), _populateMarkets);
         }
 
         // Populates markets dropdown.
@@ -139,7 +144,7 @@ jQuery(function(){
 
                 timeframe: timeFrame,
                 since: dataSince,
-                limit: 0
+                limit: dataLimitInput.val()||0
             }
 
             _ccxtSrvc.loadOHLCVData(exchangeSelect.val(), marketSelect.val(), options, function(err, OHLCVData){

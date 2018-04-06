@@ -4,7 +4,7 @@ _ccxtSrvc= (function($){
 
     // Switch API HOST according to environment.
     // For local development.
-    //var _API_HOST = 'http://127.0.0.1:3001';
+    //var _API_HOST = 'http://127.0.0.1:3000';
     // For production.
     var _API_HOST = 'http://169.60.157.140:3001';
 
