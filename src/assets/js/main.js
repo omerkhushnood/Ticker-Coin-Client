@@ -38,6 +38,9 @@ jQuery(function(){
         var _DEFAULT_SINCE_DATE = new Date();
         _DEFAULT_SINCE_DATE.setDate(_DEFAULT_SINCE_DATE.getDate()-1);
 
+        // Populates the date field with default value.
+        dataSinceInput.val(_DEFAULT_SINCE_DATE.toISOString().substring(0,10));
+
         function _logError(err){
 
             errorLogContainer.empty();
@@ -137,13 +140,18 @@ jQuery(function(){
         // Handles fetching OHLC data and plotting.
         function _onPlotData(){
 
-            var dataSince = dataSinceInput.val()?(new Date(dataSinceInput.val())).getTime():_DEFAULT_SINCE_DATE.getTime();
+            var now = new Date();
+
+            var dataSince = dataSinceInput.val()?new Date(dataSinceInput.val()):_DEFAULT_SINCE_DATE;
+            dataSince.setHours(now.getHours());
+            dataSince.setMinutes(now.getMinutes());
+
             var timeFrame = Math.abs(Math.round(timeframeValueInput.val()))+timeframeUnitSelect.val();
 
             var options = {
 
                 timeframe: timeFrame,
-                since: dataSince,
+                since: dataSince.getTime(),
                 limit: dataLimitInput.val()||0
             }
 
