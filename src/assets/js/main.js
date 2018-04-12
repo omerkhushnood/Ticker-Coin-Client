@@ -6,11 +6,11 @@ var _tc = angular.module('tickercoin', []);
 
 //
 // Dev API host.
-_tc.constant('API_HOST', 'http://localhost:3000');
+// _tc.constant('API_HOST', 'http://localhost:3000');
 
 //
 // Prod API host.
-// _tc.constant('API_HOST', 'http://169.60.157.140:3001');
+_tc.constant('API_HOST', 'http://169.60.157.140:3001');
 
 //
 // Ticker coin api service.
