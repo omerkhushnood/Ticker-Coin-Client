@@ -1,181 +1,278 @@
-/*
-    Main script.
-*/
+'use strict';
 
-jQuery(function(){
+//
+// Declare module
+var _tc = angular.module('tickercoin', []);
 
-    //
-    // Populates exchanges dropdown.
-    (function($){
+//
+// Dev API host.
+_tc.constant('API_HOST', 'http://localhost:3000');
 
-        var _EXCHANGE_SELECT_SELECTOR = '#ccxt-exchange-select';
-        var _MARKET_SELECT_SELECTOR = '#ccxt-market-select';
-        var _TIMEFRAME_VALUE_SELECTOR = '#ccxt-timeframe-value';
-        var _TIMEFRAME_UNIT_SELECTOR = '#ccxt-timeframe-unit';
-        var _DATA_SINCE_SELECTOR = '#ccxt-data-since';
-        var _DATA_LIMIT_SELECTOR = '#ccxt-data-limit';
-        var _PLOT_DATA_BUTTON_SELECTOR = '#ccxt-plot-data';
-        var _INDICATOR_SELECT_SELECTOR = '#ccxt-indicator-select';
-        var _INDICATOR_PLOT_SELECT_SELECTOR = '#ccxt-indicator-plot';
-        var _CHART_CONTAINER_SELECTOR = 'ccxt-chart-container';
-        var _ERROR_LOG_SELECTOR = '#ccxt-err-log';
+//
+// Prod API host.
+// _tc.constant('API_HOST', 'http://169.60.157.140:3001');
 
-        var exchangeSelect = $(_EXCHANGE_SELECT_SELECTOR);
-        var marketSelect = $(_MARKET_SELECT_SELECTOR);
-        var timeframeValueInput = $(_TIMEFRAME_VALUE_SELECTOR);
-        var timeframeUnitSelect = $(_TIMEFRAME_UNIT_SELECTOR);
-        var dataSinceInput = $(_DATA_SINCE_SELECTOR);
-        var dataLimitInput = $(_DATA_LIMIT_SELECTOR);
-        var plotDataButton = $(_PLOT_DATA_BUTTON_SELECTOR);
-        var indicatorSelect = $(_INDICATOR_SELECT_SELECTOR);
-        var indicatorPlotSelect = $(_INDICATOR_PLOT_SELECT_SELECTOR);
-        var chartContainer = $(_CHART_CONTAINER_SELECTOR);
-        var errorLogContainer = $(_ERROR_LOG_SELECTOR);
+//
+// Ticker coin api service.
+_tc.factory('tickerCoinSrvc', [
 
-        var _chart = null;
-        var _currOHLCVData = null;
+            '$http','API_HOST',
+    function($http , API_HOST){
+
+        function _fetchExchanges(){
+
+            var url = API_HOST + '/api/ccxt/exchanges';
+            return $http.get(url)
+                .then(function(res){
+
+                    return res.data;
+                })
+            ;
+        }
+
+        function _fetchArbitragePairs(markets){
+
+            var url = API_HOST + '/api/ccxt/arbitrage?exchanges=' + markets.join(',');
+            return $http.get(url)
+                .then(function(res){
+
+                    return res.data
+                })
+            ;
+        }
+
+        function _fetchOHLCVData(exchange, market, options){
+
+            var url = API_HOST + '/api/ccxt/exchanges/' + 
+                encodeURIComponent(exchange) +
+                '/markets/' + encodeURIComponent(market) +
+                '/ohlcv?' +
+                'limit=' + (options.limit||0) +
+                '&since=' + (options.since||Date.now()) +
+                '&timeframe=' + (options.timeframe||'15m')
+            ;
+
+            return $http.get(url)
+                .then(function(res){
+
+                    return res.data;
+                })
+            ;
+        }
+
+        return {
+
+            fetchExchanges: _fetchExchanges,
+            fetchArbitragePairs: _fetchArbitragePairs,
+            fetchOHLCVData: _fetchOHLCVData
+        };
+    }
+]);
+
+//
+// Any chart directive.
+_tc.directive('tcAnyChart', [
+
+            'tickerCoinSrvc',
+    function(tickerCoinSrvc){
 
         var _DEFAULT_SINCE_DATE = new Date();
         _DEFAULT_SINCE_DATE.setDate(_DEFAULT_SINCE_DATE.getDate()-1);
 
-        // Populates the date field with default value.
-        dataSinceInput.val(_DEFAULT_SINCE_DATE.toISOString().substring(0,10));
+        var OHLCVOptions = {
 
-        function _logError(err){
+            timeframe: '15m',
+            since: _DEFAULT_SINCE_DATE.getTime(),
+            limit: 0
+        };
 
-            errorLogContainer.empty();
-            errorLogContainer.text(err);
-            errorLogContainer.removeClass('tc-hidden');
-        }
+        var techIndicators = [
 
-        function _clearErrorLog(){
+            {value: 'sma', label: 'SMA'},
+            {value: 'ama', label: 'Adaptive Moving Average'},
+            {value: 'momentum', label: 'Momentum'},
+            {value: 'mma', label: 'Modified Moving Average'},
+            {value: 'roc', label: 'Rate of change'},
+            {value: 'dmi', label: 'Directional Movement Index'},
+            {value: 'rsi', label: 'Relative Strength Index (RSI)'},
+            {value: 'ema', label: 'Exponential Moving Average (EMA)'},
+            {value: 'bbands', label: 'Bollinger Bands'},
+            {value: 'adl', label: 'Accumulation Distribution Line (ADL)'},
+            {value: 'aroon', label: 'Aroon'},
+            {value: 'atr', label: 'Average True Range'},
+            {value: 'bbandsB', label: 'Bollinger Bands %B'},
+            {value: 'bbandsWidth', label: 'Bollinger Bands Width'},
+            {value: 'cmf', label: 'Chaikin Money Flow (CMF)'},
+            {value: 'cho', label: 'Chaikin Oscillator (CHO)'},
+            {value: 'cci', label: 'Commodity Channel Index (CCI)'},
+            {value: 'kdj', label: 'KDJ'},
+            {value: 'mfi', label: 'Money Flow Index (MFI)'},
+            {value: 'macd', label: 'Moving Average Convergence/Divergence'},
+            {value: 'psar', label: 'Parabolic SAR (PSAR)'},
+            {value: 'stochastic', label: 'Stochastic'},
+        ];
 
-            errorLogContainer.addClass('tc-hidden');
-            errorLogContainer.empty();
-        }
+        return {
 
-        // Populates exchanges dropdown.
-        function _populateExchanges(err, exchanges){
+            template: '' +
+                '<div>' +
+                '   <div ng-class="{\'tc-loader\': !plot.mapping}" ng-repeat="plot in plots">' +
+                '       <h4></h4>' +
+                '       <span>Indicator: </span>' +
+                '       <select ng-model="plot.indicator" ng-change="applyIndicator(plot)">' +
+                '           <option value="{{ind.value}}" ng-repeat="ind in indicators">{{ind.label}}</option>' +
+                '       </select>' +
+                '       <div id="{{plot.id}}" style="height: 450px;width: 100%;"></div>' +
+                '   </div>' +
+                '</div>'
+            ,
+            link: function(scope, iEle, iAttrs){
 
-            if(err)
-                return _logError(err);
+                var pair = scope.$eval(iAttrs.tcAnyChart);
+                scope.indicators = techIndicators;
 
-            exchangeSelect.empty();
 
-            exchanges.forEach(function(exchange){
 
-                var option = $('<option/>');
-                option.text(exchange);
-                option.attr('value', exchange);
-                exchangeSelect.append(option);
-            });
 
-            _clearErrorLog();
-            _ccxtSrvc.fetchMarkets(exchangeSelect.eq(0).val(), _populateMarkets);
-        }
 
-        // Populates markets dropdown.
-        function _populateMarkets(err, marketsHash){
 
-            if(err)
-                return _logError(err);
 
-            var markets = Object.keys(marketsHash);
 
-            marketSelect.empty();
-            markets.forEach(function(market){
 
-                var option = $('<option/>');
-                option.text(market);
-                option.attr('value', market);
-                marketSelect.append(option);
-            });
+                scope.applyIndicator = function(plot){
 
-            _clearErrorLog();
-        }
+                    plot.chart.plot(0)[plot.indicator](plot.mapping, undefined, 'line');
+                };
 
-        // Plots OHLC Chart.
-        function _plotOHLCV(){
 
-            if(!_currOHLCVData)
+
+
+
+
+
+
+
+
+                scope.plots = [];
+                angular.forEach(pair.presence, function(exchange){
+
+                    scope.plots.push({
+
+                        market: pair.symbol,
+                        exchange: exchange,
+                        id: pair.symbol + '-' + exchange + '-' + Date.now(),
+                        chart: anychart.stock(),
+                        mapping: null,
+                        indicator: 'sma'
+                    });
+                });
+
+
+
+
+
+
+
+
+
+                angular.forEach(scope.plots, function(plot){
+
+                    tickerCoinSrvc.fetchOHLCVData(plot.exchange, plot.market, OHLCVOptions)
+                        .then(function(OHLCVData){
+
+                            var table = anychart.data.table();
+                            table.addData(OHLCVData);
+
+                            var mapping = table.mapAs();
+                            mapping.addField('open', 1, 'first');
+                            mapping.addField('high', 2, 'max');
+                            mapping.addField('low', 3, 'min');
+                            mapping.addField('close', 4, 'last');
+                            mapping.addField('value', 4, 'last');
+                            mapping.addField('volumn', 5, 'volume');
+
+                            plot.mapping = mapping;
+
+                            plot.chart.plot(0).candlestick(mapping).name('ohlc');
+
+                            scope.applyIndicator(plot);
+
+                            plot.chart.title(plot.exchange);
+
+                            plot.chart.container(plot.id);
+                            plot.chart.draw();
+                        })
+                    ;
+                });
+            }
+        };
+    }
+]);
+
+//
+// Main controller
+_tc.controller('TickerCoinCtrl', [
+
+            'tickerCoinSrvc',
+    function(tickerCoinSrvc){
+
+        var vm = this;
+
+        vm.exchanges = [];
+        vm.selectedExchanges = [];
+        vm.arbitragePairs = [];
+        vm.selectedPairs = [];
+        vm.pairsToPlot = [];
+
+        // For loader
+        vm.loadingPairs = 0;
+
+        function _refreshMarkets(){
+
+            if(vm.selectedExchanges.length<2)
                 return;
 
-            if(_chart)
-                _chart.dispose();
+            vm.loadingPairs++;
+            tickerCoinSrvc.fetchArbitragePairs(vm.selectedExchanges)
+                .then(function(pairs){
 
-            var table = anychart.data.table();
-            table.addData(_currOHLCVData);
+                    vm.arbitragePairs = pairs;
+                })
+                .finally(function(){
 
-            var mapping = table.mapAs();
-            mapping.addField('open', 1, 'first');
-            mapping.addField('high', 2, 'max');
-            mapping.addField('low', 3, 'min');
-            mapping.addField('close', 4, 'last');
-            mapping.addField('value', 4, 'last');
-            mapping.addField('volumn', 5, 'volume');
+                    vm.loadingPairs--;
+                })
+            ;
+        }
 
-            _chart = anychart.stock();
+        vm.toggleExchangeSelection = function(exchange){
+
+            var index = vm.selectedExchanges.indexOf(exchange);
+
+            if(index>-1)
+                vm.selectedExchanges.splice(index, 1);
+            else
+                vm.selectedExchanges.push(exchange);
             
-            _chart.plot(0).ohlc(mapping);
+            vm.pairsToPlot = vm.arbitragePairs = vm.selectedPairs = [];
+            _refreshMarkets();
+        };
 
-            _chart.plot(0)[indicatorSelect.val()](mapping, undefined, indicatorPlotSelect.val());
+        vm.togglePairSelection = function(pair){
 
-            _chart.title('Technical Indicators Test Chart.');
+            var index = vm.selectedPairs.indexOf(pair);
 
-            _chart.container(_CHART_CONTAINER_SELECTOR);
-            _chart.draw();
+            if(index>-1)
+                vm.selectedPairs.splice(index, 1);
+            else
+                vm.selectedPairs.push(pair);
+        };
 
-            _clearErrorLog();
-        }
+        tickerCoinSrvc.fetchExchanges()
+            .then(function(exchanges){
 
-        // Handles exchange selection change.
-        function _onExchangeSelect(){
-
-            if(_chart)
-                _chart.dispose();
-
-            _ccxtSrvc.fetchMarkets(exchangeSelect.eq(0).val(), _populateMarkets);
-        }
-
-        // Handles fetching OHLC data and plotting.
-        function _onPlotData(){
-
-            var now = new Date();
-
-            var dataSince = dataSinceInput.val()?new Date(dataSinceInput.val()):_DEFAULT_SINCE_DATE;
-            dataSince.setHours(now.getHours());
-            dataSince.setMinutes(now.getMinutes());
-
-            var timeFrame = Math.abs(Math.round(timeframeValueInput.val()))+timeframeUnitSelect.val();
-
-            var options = {
-
-                timeframe: timeFrame,
-                since: dataSince.getTime(),
-                limit: dataLimitInput.val()||0
-            }
-
-            _ccxtSrvc.loadOHLCVData(exchangeSelect.val(), marketSelect.val(), options, function(err, OHLCVData){
-
-                if(err)
-                    return _logError(err);
-
-                _currOHLCVData = OHLCVData;
-                _plotOHLCV();
-            });
-        }
-
-        //
-        // Initialize.
-
-        // Add event listeners.
-        exchangeSelect.on('change', _onExchangeSelect);
-        plotDataButton.on('click', _onPlotData);
-        indicatorSelect.on('change', _plotOHLCV);
-        indicatorPlotSelect.on('change', _plotOHLCV);
-
-        // Fetch exchanges and populate dropdown.
-        _ccxtSrvc.fetchExchanges(_populateExchanges);
-
-    })(jQuery);
-});
+                vm.exchanges = exchanges;
+            })
+        ;
+    }
+]);
