@@ -79,13 +79,6 @@ _tc.directive('tcAnyChart', [
         var _DEFAULT_SINCE_DATE = new Date();
         _DEFAULT_SINCE_DATE.setDate(_DEFAULT_SINCE_DATE.getDate()-1);
 
-        var OHLCVOptions = {
-
-            timeframe: '15m',
-            since: _DEFAULT_SINCE_DATE.getTime(),
-            limit: 0
-        };
-
         var techIndicators = [
 
             {value: 'sma', label: 'SMA'},
@@ -122,13 +115,19 @@ _tc.directive('tcAnyChart', [
                 '       <select ng-model="plot.indicator" ng-change="applyIndicator(plot)">' +
                 '           <option value="{{ind.value}}" ng-repeat="ind in indicators">{{ind.label}}</option>' +
                 '       </select>' +
+                '       <span>Volume: {{plot.volume}}</span>' +
                 '       <div id="{{plot.id}}" style="height: 450px;width: 100%;"></div>' +
                 '   </div>' +
                 '</div>'
             ,
+            scope: {
+
+                ccxtOptions: '=',
+                pair: '=tcAnyChart'
+            },
             link: function(scope, iEle, iAttrs){
 
-                var pair = scope.$eval(iAttrs.tcAnyChart);
+                var pair = scope.pair;
                 scope.indicators = techIndicators;
 
 
@@ -174,6 +173,17 @@ _tc.directive('tcAnyChart', [
 
 
 
+                var OHLCVOptions = angular.copy(scope.ccxtOptions);
+                OHLCVOptions.since = OHLCVOptions.since.getTime();
+                OHLCVOptions.timeframe = (Math.abs(Math.round(OHLCVOptions.timeframe.amount))||0) + (OHLCVOptions.timeframe.unit||'m');
+
+
+
+
+
+
+
+
 
                 angular.forEach(scope.plots, function(plot){
 
@@ -192,6 +202,7 @@ _tc.directive('tcAnyChart', [
                             mapping.addField('volumn', 5, 'volume');
 
                             plot.mapping = mapping;
+                            plot.volume = OHLCVData.length?OHLCVData[OHLCVData.length-1][4]:0;
 
                             plot.chart.plot(0).candlestick(mapping).name('ohlc');
 
@@ -224,6 +235,20 @@ _tc.controller('TickerCoinCtrl', [
         vm.selectedPairs = [];
         vm.pairsToPlot = [];
 
+        var _DEFAULT_SINCE_DATE = new Date();
+        _DEFAULT_SINCE_DATE.setDate(_DEFAULT_SINCE_DATE.getDate()-1);
+
+        vm.ccxtOptions = {
+
+            limit: 0,
+            timeframe: {
+
+                amount: 15,
+                unit: 'm'
+            },
+            since: _DEFAULT_SINCE_DATE
+        };
+
         // For loader
         vm.loadingPairs = 0;
 
@@ -254,7 +279,10 @@ _tc.controller('TickerCoinCtrl', [
             else
                 vm.selectedExchanges.push(exchange);
             
-            vm.pairsToPlot = vm.arbitragePairs = vm.selectedPairs = [];
+            vm.pairsToPlot = [];
+            vm.arbitragePairs = [];
+            vm.selectedPairs = [];
+
             _refreshMarkets();
         };
 
@@ -274,5 +302,10 @@ _tc.controller('TickerCoinCtrl', [
                 vm.exchanges = exchanges;
             })
         ;
+
+        vm.plotData = function(){
+
+            vm.pairsToPlot = angular.copy(vm.selectedPairs);
+        };
     }
 ]);
