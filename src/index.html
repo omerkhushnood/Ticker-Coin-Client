@@ -252,7 +252,7 @@
 
 
     <!-- Warning -->
-    <div class="tc-warning" ng-show="tcCtrl.selectedExchanges.indexOf('bittrex') > -1">
+    <div class="tc-warning" ng-show="tcCtrl.ccxtOptions.timeframe.unit == 'm' && tcCtrl.selectedExchanges.indexOf('bittrex') > -1">
         Bittrex does not support minutes timeframe. Choose atleast an hour.
     </div>
     <!-- /Warning -->
