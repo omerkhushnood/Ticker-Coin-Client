@@ -17,6 +17,10 @@ body{
     background-color: $color-white;
     margin: 0;
     padding: 0;
+    background-image: url('../images/bg.svg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center center; 
 }
 
 .tc-loader{
@@ -83,6 +87,7 @@ body{
 .tc-page{
 
     box-shadow: rgba(#000000, 0.15) 0px 0px 8px;
+    background-color: #ffffff;
 }
 
 
