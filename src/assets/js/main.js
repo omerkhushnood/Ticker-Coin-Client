@@ -139,7 +139,7 @@ _tc.directive('tcAnyChart', [
 
             template: '' +
                 '<div>' +
-                '   <div ng-class="{\'tc-loader\': !plot.mapping}" ng-repeat="plot in plots">' +
+                '   <div ng-class="{\'tc-loader\': !plot.mapping}" ng-repeat="plot in plots | orderBy:\'-volume\'">' +
                 '       <h4></h4>' +
                 '       <div>' +
                 '           <div style="float:right;">Volume: <b>{{plot.volume || \'--\'}}</b></div>' +
@@ -200,7 +200,8 @@ _tc.directive('tcAnyChart', [
                         id: pair.symbol + '-' + exchange + '-' + Date.now(),
                         chart: anychart.stock(),
                         mapping: null,
-                        indicator: ''
+                        indicator: '',
+                        volume: 0 
                     });
                 });
                 
