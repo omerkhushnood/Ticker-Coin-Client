@@ -295,3 +295,20 @@ body{
         margin-bottom: 2em
     }
 }
+
+
+
+
+.tc-warning{
+
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    background-color: $color-yellow;
+    color: #000000;
+    text-align: center;
+    font-size: 0.9em;
+    padding: 0.3em 1em;
+    font-weight: 700;
+}
