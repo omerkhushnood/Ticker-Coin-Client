@@ -59,7 +59,7 @@
     <div>
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-10">
+                <div class="col-11">
                     <div class="tc-page">
                         <!-- top spacing -->
                         <div><br><br></div>
@@ -204,9 +204,15 @@
 
                                 <!-- Plot Button -->
                                 <div class="col-auto">
-                                    <button class="tc-action-button" ng-click="tcCtrl.plotData()">Plot Data</button>
+                                    <button class="tc-action-button" style="margin-right: 3px;" ng-click="tcCtrl.plotData()">Plot Data</button>
                                 </div>
                                 <!-- /Plot Button -->
+
+                                <!-- Clear selection Button -->
+                                <div class="col-auto">
+                                    <button class="tc-action-button" ng-click="tcCtrl.clearSelection()">Clear Selection</button>
+                                </div>
+                                <!-- /Clear selection Button -->
                             </div>
                         </div>
                         <!-- /Control bar -->
@@ -228,6 +234,18 @@
                                     </div>
                                 </div>
                             </header>
+                            <div><br></div>
+                            <div ng-show="tcCtrl.pairsToPlot.length" class="container-fluid">
+                                <span>Apply indicator to all: </span>
+                                <input type="checkbox" ng-model="tcCtrl.globalChartSettings.indicator.applyToAll">
+                                <div>
+                                    <select ng-disabled="!tcCtrl.globalChartSettings.indicator.applyToAll" ng-model="tcCtrl.globalChartSettings.indicator.value">
+                                        <option value="">-- Select --</option>
+                                        <option value="{{ind.value}}" ng-repeat="ind in tcCtrl.techIndicators">{{ind.label}}</option>
+                                    </select>
+                                    <button ng-click="tcCtrl.applyIndicator(tcCtrl.globalChartSettings.indicator.value)">Apply</button>
+                                </div>
+                            </div>
                             <div>
                                 <div class="tc-charts-group" ng-repeat="pair in tcCtrl.pairsToPlot">
                                     <h1>{{pair.symbol}}</h1>

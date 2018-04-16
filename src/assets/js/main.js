@@ -12,6 +12,34 @@ var _tc = angular.module('tickercoin', []);
 // Prod API host.
 _tc.constant('API_HOST', 'http://169.60.157.140:3001');
 
+//
+// Technical indicators.
+_tc.value('techIndicators', [
+
+    {value: 'sma', label: 'SMA'},
+    {value: 'ama', label: 'Adaptive Moving Average'},
+    {value: 'momentum', label: 'Momentum'},
+    {value: 'mma', label: 'Modified Moving Average'},
+    {value: 'roc', label: 'Rate of change'},
+    {value: 'dmi', label: 'Directional Movement Index'},
+    {value: 'rsi', label: 'Relative Strength Index (RSI)'},
+    {value: 'ema', label: 'Exponential Moving Average (EMA)'},
+    {value: 'bbands', label: 'Bollinger Bands'},
+    {value: 'adl', label: 'Accumulation Distribution Line (ADL)'},
+    {value: 'aroon', label: 'Aroon'},
+    {value: 'atr', label: 'Average True Range'},
+    {value: 'bbandsB', label: 'Bollinger Bands %B'},
+    {value: 'bbandsWidth', label: 'Bollinger Bands Width'},
+    {value: 'cmf', label: 'Chaikin Money Flow (CMF)'},
+    {value: 'cho', label: 'Chaikin Oscillator (CHO)'},
+    {value: 'cci', label: 'Commodity Channel Index (CCI)'},
+    {value: 'kdj', label: 'KDJ'},
+    {value: 'mfi', label: 'Money Flow Index (MFI)'},
+    {value: 'macd', label: 'Moving Average Convergence/Divergence'},
+    {value: 'psar', label: 'Parabolic SAR (PSAR)'},
+    {value: 'stochastic', label: 'Stochastic'},
+]);
+
 _tc.run([
 
             '$rootScope',
@@ -21,7 +49,8 @@ _tc.run([
 
             indicator: {
 
-                applyToAll: true
+                applyToAll: true,
+                value: ''
             }
         };
     }
@@ -88,37 +117,11 @@ _tc.factory('tickerCoinSrvc', [
 // Any chart directive.
 _tc.directive('tcAnyChart', [
 
-            'tickerCoinSrvc','$rootScope',
-    function(tickerCoinSrvc , $rootScope){
+            'tickerCoinSrvc','$rootScope','techIndicators',
+    function(tickerCoinSrvc , $rootScope , techIndicators){
 
         var _DEFAULT_SINCE_DATE = new Date();
         _DEFAULT_SINCE_DATE.setDate(_DEFAULT_SINCE_DATE.getDate()-1);
-
-        var techIndicators = [
-
-            {value: 'sma', label: 'SMA'},
-            {value: 'ama', label: 'Adaptive Moving Average'},
-            {value: 'momentum', label: 'Momentum'},
-            {value: 'mma', label: 'Modified Moving Average'},
-            {value: 'roc', label: 'Rate of change'},
-            {value: 'dmi', label: 'Directional Movement Index'},
-            {value: 'rsi', label: 'Relative Strength Index (RSI)'},
-            {value: 'ema', label: 'Exponential Moving Average (EMA)'},
-            {value: 'bbands', label: 'Bollinger Bands'},
-            {value: 'adl', label: 'Accumulation Distribution Line (ADL)'},
-            {value: 'aroon', label: 'Aroon'},
-            {value: 'atr', label: 'Average True Range'},
-            {value: 'bbandsB', label: 'Bollinger Bands %B'},
-            {value: 'bbandsWidth', label: 'Bollinger Bands Width'},
-            {value: 'cmf', label: 'Chaikin Money Flow (CMF)'},
-            {value: 'cho', label: 'Chaikin Oscillator (CHO)'},
-            {value: 'cci', label: 'Commodity Channel Index (CCI)'},
-            {value: 'kdj', label: 'KDJ'},
-            {value: 'mfi', label: 'Money Flow Index (MFI)'},
-            {value: 'macd', label: 'Moving Average Convergence/Divergence'},
-            {value: 'psar', label: 'Parabolic SAR (PSAR)'},
-            {value: 'stochastic', label: 'Stochastic'},
-        ];
 
         function _getSummedUpVolume(OHLCVData){
 
@@ -143,11 +146,8 @@ _tc.directive('tcAnyChart', [
                 '       <h4></h4>' +
                 '       <div>' +
                 '           <div style="float:right;">Volume: <b>{{plot.volume || \'--\'}}</b></div>' +
-                '           <span ng-show="$index==0">Apply indicator to all: </span>' +
-                '           <input ng-show="$index==0" type="checkbox" ng-model="globalChartSettings.indicator.applyToAll">' +
-                '           <br>' +
-                '           <span ng-show="$index==0 || !globalChartSettings.indicator.applyToAll">Indicator: </span>' +
-                '           <select ng-show="$index==0 || !globalChartSettings.indicator.applyToAll" ng-model="plot.indicator" ng-change="applyIndicator(plot)">' +
+                '           <span ng-show="!globalChartSettings.indicator.applyToAll">Indicator: </span>' +
+                '           <select ng-show="!globalChartSettings.indicator.applyToAll" ng-model="plot.indicator" ng-change="applyIndicator(plot)">' +
                 '               <option value="">-- Select --</option>' +
                 '               <option value="{{ind.value}}" ng-repeat="ind in indicators">{{ind.label}}</option>' +
                 '           </select>' +
@@ -175,10 +175,7 @@ _tc.directive('tcAnyChart', [
                 
                 scope.applyIndicator = function(plot){
 
-                    if(scope.globalChartSettings.indicator.applyToAll)
-                        $rootScope.$broadcast('apply-indicator.tc', plot.indicator);
-                    else
-                        _applyIndicator(plot, plot.indicator);
+                    _applyIndicator(plot, plot.indicator);
                 };
 
                 // Apply indicator to all plots.
@@ -246,8 +243,8 @@ _tc.directive('tcAnyChart', [
 // Main controller
 _tc.controller('TickerCoinCtrl', [
 
-            'tickerCoinSrvc',
-    function(tickerCoinSrvc){
+            'tickerCoinSrvc','$rootScope','techIndicators',
+    function(tickerCoinSrvc , $rootScope , techIndicators){
 
         var vm = this;
 
@@ -256,6 +253,14 @@ _tc.controller('TickerCoinCtrl', [
         vm.arbitragePairs = [];
         vm.selectedPairs = [];
         vm.pairsToPlot = [];
+        vm.techIndicators = techIndicators;
+
+        vm.globalChartSettings = $rootScope.globalChartSettings;
+
+        vm.applyIndicator = function(indicator){
+
+            $rootScope.$broadcast('apply-indicator.tc', indicator || vm.globalChartSettings.indicator.value);
+        };
 
         var _DEFAULT_SINCE_DATE = new Date();
         _DEFAULT_SINCE_DATE.setDate(_DEFAULT_SINCE_DATE.getDate()-1);
@@ -328,6 +333,13 @@ _tc.controller('TickerCoinCtrl', [
         vm.plotData = function(){
 
             vm.pairsToPlot = angular.copy(vm.selectedPairs);
+        };
+
+        vm.clearSelection = function(){
+
+            vm.pairsToPlot = [];
+            vm.selectedPairs = [];
+            vm.selectedExchanges = [];
         };
     }
 ]);
