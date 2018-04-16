@@ -143,11 +143,11 @@ _tc.directive('tcAnyChart', [
                 '       <h4></h4>' +
                 '       <div>' +
                 '           <div style="float:right;">Volume: <b>{{plot.volume || \'--\'}}</b></div>' +
-                '           <span>Apply indicator to all: </span>' +
-                '           <input type="checkbox" ng-model="globalChartSettings.indicator.applyToAll">' +
+                '           <span ng-show="$index==0">Apply indicator to all: </span>' +
+                '           <input ng-show="$index==0" type="checkbox" ng-model="globalChartSettings.indicator.applyToAll">' +
                 '           <br>' +
-                '           <span>Indicator: </span>' +
-                '           <select ng-model="plot.indicator" ng-change="applyIndicator(plot)">' +
+                '           <span ng-show="$index==0 || !globalChartSettings.indicator.applyToAll">Indicator: </span>' +
+                '           <select ng-show="$index==0 || !globalChartSettings.indicator.applyToAll" ng-model="plot.indicator" ng-change="applyIndicator(plot)">' +
                 '               <option value="">-- Select --</option>' +
                 '               <option value="{{ind.value}}" ng-repeat="ind in indicators">{{ind.label}}</option>' +
                 '           </select>' +
