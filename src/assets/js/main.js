@@ -2,7 +2,7 @@
 
 //
 // Declare module
-var _tc = angular.module('tickercoin', []);
+var _tc = angular.module('tickercoin', ['btford.modal']);
 
 //
 // Dev API host.
@@ -16,47 +16,166 @@ _tc.constant('API_HOST', 'http://169.60.157.140:3001');
 // Technical indicators.
 _tc.value('techIndicators', [
 
-    {value: 'sma', label: 'SMA'},
-    {value: 'ama', label: 'Adaptive Moving Average'},
-    {value: 'momentum', label: 'Momentum'},
-    {value: 'mma', label: 'Modified Moving Average'},
-    {value: 'roc', label: 'Rate of change'},
-    {value: 'dmi', label: 'Directional Movement Index'},
-    {value: 'rsi', label: 'Relative Strength Index (RSI)'},
-    {value: 'ema', label: 'Exponential Moving Average (EMA)'},
-    {value: 'bbands', label: 'Bollinger Bands'},
-    {value: 'adl', label: 'Accumulation Distribution Line (ADL)'},
-    {value: 'aroon', label: 'Aroon'},
-    {value: 'atr', label: 'Average True Range'},
-    {value: 'bbandsB', label: 'Bollinger Bands %B'},
-    {value: 'bbandsWidth', label: 'Bollinger Bands Width'},
-    {value: 'cmf', label: 'Chaikin Money Flow (CMF)'},
-    {value: 'cho', label: 'Chaikin Oscillator (CHO)'},
-    {value: 'cci', label: 'Commodity Channel Index (CCI)'},
-    {value: 'kdj', label: 'KDJ'},
-    {value: 'mfi', label: 'Money Flow Index (MFI)'},
-    {value: 'macd', label: 'Moving Average Convergence/Divergence'},
-    {value: 'psar', label: 'Parabolic SAR (PSAR)'},
-    {value: 'stochastic', label: 'Stochastic'},
+    {value: 'candlestick', label: 'Candle Stick', args: []},
+    {value: 'sma', label: 'SMA', args: [{label: 'Period', value: '20'}]},
+    {value: 'ama', label: 'Adaptive Moving Average', args: [{label: 'Period', value: '20'}]},
+    {value: 'momentum', label: 'Momentum', args: [{label: 'Period', value: '20'}]},
+    {value: 'mma', label: 'Modified Moving Average', args: [{label: 'Period', value: '20'}]},
+    {value: 'roc', label: 'Rate of change', args: [{label: 'Period', value: '20'}]},
+    {value: 'dmi', label: 'Directional Movement Index', args: [{label: 'Period', value: '20'}]},
+    {value: 'rsi', label: 'Relative Strength Index (RSI)', args: [{label: 'Period', value: '20'}]},
+    {value: 'ema', label: 'Exponential Moving Average (EMA)', args: [{label: 'Period', value: '20'}]},
+    {value: 'bbands', label: 'Bollinger Bands', args: [{label: 'Period', value: '20'}]},
+    {value: 'adl', label: 'Accumulation Distribution Line (ADL)', args: [{label: 'Period', value: '20'}]},
+    {value: 'aroon', label: 'Aroon', args: [{label: 'Period', value: '20'}]},
+    {value: 'atr', label: 'Average True Range', args: [{label: 'Period', value: '20'}]},
+    {value: 'bbandsB', label: 'Bollinger Bands %B', args: [{label: 'Period', value: '20'}]},
+    {value: 'bbandsWidth', label: 'Bollinger Bands Width', args: [{label: 'Period', value: '20'}]},
+    {value: 'cmf', label: 'Chaikin Money Flow (CMF)', args: [{label: 'Period', value: '20'}]},
+    {value: 'cho', label: 'Chaikin Oscillator (CHO)', args: [{label: 'Period', value: '20'}]},
+    {value: 'cci', label: 'Commodity Channel Index (CCI)', args: [{label: 'Period', value: '20'}]},
+    {value: 'kdj', label: 'KDJ', args: [{label: 'Period', value: '20'}]},
+    {value: 'mfi', label: 'Money Flow Index (MFI)', args: [{label: 'Period', value: '20'}]},
+    {value: 'macd', label: 'Moving Average Convergence/Divergence', args: [{label: 'Period', value: '20'}]},
+    {value: 'psar', label: 'Parabolic SAR (PSAR)', args: [{label: 'Period', value: '20'}]},
+    {value: 'stochastic', label: 'Stochastic', args: [{label: 'Period', value: '20'}]},
 ]);
 
 _tc.run([
 
-            '$rootScope',
-    function($rootScope){
+            '$rootScope','tcStorage',
+    function($rootScope , tcStorage){
 
-        $rootScope.globalChartSettings = {
+        var savedConfig = tcStorage.getChartConfig();
 
-            indicator: {
+        if(savedConfig)
+            $rootScope.chartConfig = savedConfig;
+        else{
+            $rootScope.chartConfig = {
 
-                applyToAll: true,
-                value: ''
-            }
+                height: 600,
+                plots: [{
+
+                    height: null,
+                    series: [
+
+                        {
+                            label: 'Candle Stick',
+                            value: 'candlestick',
+                            args: []
+                        }
+                    ]
+                }]
+            };
+        }
+    }
+]);
+
+_tc.controller('ChartOptionsModalCtrl', [
+
+            '$scope','techIndicators','chartOptionsModal','$rootScope','tcStorage',
+    function($scope , techIndicators , chartOptionsModal , $rootScope , tcStorage){
+
+        $scope.indicators = techIndicators;
+        var vm = this;
+
+        $scope.chartConfig = angular.copy($scope.chartConfig);
+
+        vm.closeModal = function(){
+
+            chartOptionsModal.deactivate();
+        };
+
+        vm.addSeries = function(series, plot){
+
+            if(!series || !plot) return;
+            plot.series.push(angular.copy(series));
+        };
+
+        vm.removeSeries = function(series, plot){
+
+            if(!series || !plot) return;
+            var index = plot.series.indexOf(series);
+
+            if(index>-1)
+                plot.series.splice(index, 1);
+        };
+
+        vm.addPlot = function(){
+
+            $scope.chartConfig.plots.push({
+
+                height: 30,
+                series: []
+            });
+        };
+
+        vm.removePlot = function(plot){
+
+            var index = $scope.chartConfig.plots.indexOf(plot);
+
+            if(index>-1)
+                $scope.chartConfig.plots.splice(index, 1);
+        };
+
+        vm.applyConfig = function(){
+
+            $rootScope.$broadcast('tc.apply-charts-config', $scope.chartConfig);
+            $rootScope.chartConfig = $scope.chartConfig;
+            vm.closeModal();
+        };
+
+        vm.saveConfig = function(){
+
+            tcStorage.saveChartConfig($scope.chartConfig);
         };
     }
 ]);
 
-//
+_tc.factory('chartOptionsModal', [
+
+            'btfModal',
+    function(btfModal){
+
+        return btfModal({
+
+            controller: 'ChartOptionsModalCtrl',
+            controllerAs: 'modalCtrl',
+            templateUrl: 'chart-options-modal.html'
+        });
+    }
+]);
+
+_tc.factory('tcStorage', [
+
+            '$window',
+    function($window){
+
+        var storage = $window.localStorage;
+        
+        function _saveChartConfig(config){
+
+            var configString = angular.toJson(config);
+            storage.setItem('tc_chart_config', configString);
+        }
+
+        function _getChartConfig(){
+
+            var configString = storage.getItem('tc_chart_config');
+            var config = angular.fromJson(configString);
+
+            return config;
+        }
+
+        return {
+
+            saveChartConfig: _saveChartConfig,
+            getChartConfig: _getChartConfig
+        };
+    }
+]);
+
+
 // Ticker coin api service.
 _tc.factory('tickerCoinSrvc', [
 
@@ -117,8 +236,8 @@ _tc.factory('tickerCoinSrvc', [
 // Any chart directive.
 _tc.directive('tcAnyChart', [
 
-            'tickerCoinSrvc','$rootScope','techIndicators',
-    function(tickerCoinSrvc , $rootScope , techIndicators){
+            'tickerCoinSrvc','$rootScope',
+    function(tickerCoinSrvc , $rootScope){
 
         var _DEFAULT_SINCE_DATE = new Date();
         _DEFAULT_SINCE_DATE.setDate(_DEFAULT_SINCE_DATE.getDate()-1);
@@ -142,17 +261,12 @@ _tc.directive('tcAnyChart', [
 
             template: '' +
                 '<div>' +
-                '   <div ng-class="{\'tc-loader\': !plot.mapping}" ng-repeat="plot in plots | orderBy:\'-volume\'">' +
+                '   <div ng-class="{\'tc-loader\': !chart.mapping}" ng-repeat="chart in charts | orderBy:\'-volume\'">' +
                 '       <h4></h4>' +
                 '       <div>' +
-                '           <div style="float:right;">Volume: <b>{{plot.volume || \'--\'}}</b></div>' +
-                '           <span ng-show="!globalChartSettings.indicator.applyToAll">Indicator: </span>' +
-                '           <select ng-show="!globalChartSettings.indicator.applyToAll" ng-model="plot.indicator" ng-change="applyIndicator(plot)">' +
-                '               <option value="">-- Select --</option>' +
-                '               <option value="{{ind.value}}" ng-repeat="ind in indicators">{{ind.label}}</option>' +
-                '           </select>' +
+                '           <div style="float:right;">Volume: <b>{{chart.volume || \'--\'}}</b></div>' +
                 '       </div>' +
-                '       <div id="{{plot.id}}" style="height: 450px;width: 100%;"></div>' +
+                '       <div id="{{chart.id}}" ng-style="{height: chart.config.height+\'px\'}" style="width: 100%;"></div>' +
                 '   </div>' +
                 '</div>'
             ,
@@ -164,41 +278,53 @@ _tc.directive('tcAnyChart', [
             link: function(scope, iEle, iAttrs){
 
                 var pair = scope.pair;
-                scope.indicators = techIndicators;
-                scope.globalChartSettings = $rootScope.globalChartSettings;
 
-                function _applyIndicator(plot, indicator){
+                function _drawChart(chart){
 
-                    plot.chart.plot(0)[indicator || plot.indicator](plot.mapping, undefined, 'line');
-                    plot.indicator = indicator;
+                    chart.chart.dispose();
+                    chart.chart = anychart.stock();
+
+                    for(var i=0; i<chart.config.plots.length; i++){
+
+                        var plotSett = chart.config.plots[i];
+
+                        if(plotSett.height)
+                            chart.chart.plot(i).height(plotSett.height+'%');
+                            
+                        //chart.chart.plot(i).removeAllSeries();
+
+                        angular.forEach(plotSett.series, function(seriesObj){
+
+                            chart.chart.plot(i)[seriesObj.value](chart.mapping, seriesObj.args[0]?seriesObj.args[0].value:undefined, seriesObj.args[1]?seriesObj.args[1].value:undefined);
+                        });
+                    }
+
+                    chart.chart.title(chart.exchange);
+                    chart.chart.container(chart.id);
+                    chart.chart.draw();
                 }
-                
-                scope.applyIndicator = function(plot){
 
-                    _applyIndicator(plot, plot.indicator);
-                };
+                scope.$on('tc.apply-charts-config', function(e, config){
 
-                // Apply indicator to all plots.
-                scope.$on('apply-indicator.tc', function(e, indicator){
+                    angular.forEach(scope.charts, function(chart){
 
-                    angular.forEach(scope.plots, function(plot){
-
-                        _applyIndicator(plot, indicator);
+                        chart.config = angular.copy(config);
+                        _drawChart(chart);
                     });
                 });
                 
-                scope.plots = [];
+                scope.charts = [];
                 angular.forEach(pair.presence, function(exchange){
 
-                    scope.plots.push({
+                    scope.charts.push({
 
                         market: pair.symbol,
                         exchange: exchange,
                         id: pair.symbol + '-' + exchange + '-' + Date.now(),
                         chart: anychart.stock(),
                         mapping: null,
-                        indicator: '',
-                        volume: 0 
+                        volume: 0,
+                        config: angular.copy($rootScope.chartConfig)
                     });
                 });
                 
@@ -206,9 +332,9 @@ _tc.directive('tcAnyChart', [
                 OHLCVOptions.since = OHLCVOptions.since.getTime();
                 OHLCVOptions.timeframe = (Math.abs(Math.round(OHLCVOptions.timeframe.amount))||0) + (OHLCVOptions.timeframe.unit||'m');
                 
-                angular.forEach(scope.plots, function(plot){
+                angular.forEach(scope.charts, function(chart){
 
-                    tickerCoinSrvc.fetchOHLCVData(plot.exchange, plot.market, OHLCVOptions)
+                    tickerCoinSrvc.fetchOHLCVData(chart.exchange, chart.market, OHLCVOptions)
                         .then(function(OHLCVData){
 
                             var table = anychart.data.table();
@@ -222,15 +348,10 @@ _tc.directive('tcAnyChart', [
                             mapping.addField('value', 4, 'last');
                             mapping.addField('volumn', 5, 'volume');
 
-                            plot.mapping = mapping;
-                            plot.volume = _getSummedUpVolume(OHLCVData);
+                            chart.mapping = mapping;
+                            chart.volume = _getSummedUpVolume(OHLCVData);
 
-                            plot.chart.plot(0).candlestick(mapping).name('ohlc');
-
-                            plot.chart.title(plot.exchange);
-
-                            plot.chart.container(plot.id);
-                            plot.chart.draw();
+                            _drawChart(chart);
                         })
                     ;
                 });
@@ -243,8 +364,8 @@ _tc.directive('tcAnyChart', [
 // Main controller
 _tc.controller('TickerCoinCtrl', [
 
-            'tickerCoinSrvc','$rootScope','techIndicators',
-    function(tickerCoinSrvc , $rootScope , techIndicators){
+            'tickerCoinSrvc','$rootScope','chartOptionsModal',
+    function(tickerCoinSrvc , $rootScope , chartOptionsModal){
 
         var vm = this;
 
@@ -253,13 +374,10 @@ _tc.controller('TickerCoinCtrl', [
         vm.arbitragePairs = [];
         vm.selectedPairs = [];
         vm.pairsToPlot = [];
-        vm.techIndicators = techIndicators;
 
-        vm.globalChartSettings = $rootScope.globalChartSettings;
+        vm.openChartConfigDialog = function(){
 
-        vm.applyIndicator = function(indicator){
-
-            $rootScope.$broadcast('apply-indicator.tc', indicator || vm.globalChartSettings.indicator.value);
+            chartOptionsModal.activate({'chartConfig': $rootScope.chartConfig});
         };
 
         var _DEFAULT_SINCE_DATE = new Date();

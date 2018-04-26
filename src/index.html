@@ -232,20 +232,15 @@
                                     <div class="col">
                                         <div class="tc-line" style="border-color: #000000;"></div>
                                     </div>
+                                    <div class="col-auto">
+                                        <div style="cursor: pointer;margin-left: 1em;margin-right: 1em;" ng-click="tcCtrl.openChartConfigDialog()">
+                                            <img src="assets/images/icons/settings.svg" alt="" style="width: 1.5em;margin-right: 5px;vertical-align: middle;">
+                                            Configer Chart
+                                        </div>
+                                    </div>
                                 </div>
                             </header>
                             <div><br></div>
-                            <div ng-show="tcCtrl.pairsToPlot.length" class="container-fluid">
-                                <span>Apply indicator to all: </span>
-                                <input type="checkbox" ng-model="tcCtrl.globalChartSettings.indicator.applyToAll">
-                                <div>
-                                    <select ng-disabled="!tcCtrl.globalChartSettings.indicator.applyToAll" ng-model="tcCtrl.globalChartSettings.indicator.value">
-                                        <option value="">-- Select --</option>
-                                        <option value="{{ind.value}}" ng-repeat="ind in tcCtrl.techIndicators">{{ind.label}}</option>
-                                    </select>
-                                    <button ng-click="tcCtrl.applyIndicator(tcCtrl.globalChartSettings.indicator.value)">Apply</button>
-                                </div>
-                            </div>
                             <div>
                                 <div class="tc-charts-group" ng-repeat="pair in tcCtrl.pairsToPlot">
                                     <h1>{{pair.symbol}}</h1>
@@ -268,25 +263,6 @@
 
 
 
-
-    <!-- Warning -->
-    <div class="tc-warning" ng-show="!noWarning && tcCtrl.ccxtOptions.timeframe.unit == 'm' && tcCtrl.selectedExchanges.indexOf('bittrex') > -1">
-        Bittrex does not support minutes timeframe. Choose atleast an hour.
-        <div class="tc-close-icon" ng-click="noWarning=true;">
-            <svg viewBox="0 0 1792 1792"><path d="M1490 1322q0 40-28 68l-136 136q-28 28-68 28t-68-28l-294-294-294 294q-28 28-68 28t-68-28l-136-136q-28-28-28-68t28-68l294-294-294-294q-28-28-28-68t28-68l136-136q28-28 68-28t68 28l294 294 294-294q28-28 68-28t68 28l136 136q28 28 28 68t-28 68l-294 294 294 294q28 28 28 68z" fill="#fff"/></svg>
-        </div>
-    </div>
-    <!-- /Warning -->
-
-
-
-
-
-
-
-
-
-
     <!-- build:js assets/js/lib.js -->
     <!-- Libraries -->
     <script src="assets/libs/node_modules/anychart/dist/js/anychart-base.min.js"></script>
@@ -294,6 +270,7 @@
     <script src="assets/libs/node_modules/anychart/dist/js/anychart-stock.min.js"></script>
 
     <script src="assets/libs/node_modules/angular/angular.min.js"></script>
+    <script src="assets/libs/node_modules/angular-modal/modal.js"></script>
     <!-- /Libraries -->
     <!-- endbuild -->
 
