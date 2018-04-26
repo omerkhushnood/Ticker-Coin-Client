@@ -23,65 +23,95 @@
     left: 50%;
     transform: translate(-50%, -50%);
     width: 70%;
-    min-height: 70%;
-    max-height: 95%;
+    height: 90%;
     overflow: auto;
-    background-color: #ffffff;
+    background-color: #000000;
     box-shadow: rgba(#000000, 0.5) 0px 0px 12px;
+    box-sizing: border-box;
+
+    .tc-modal-title{
+
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        color: #ffffff;
+    }
+
+    .tc-user-input{
+
+        border: none;
+        border-bottom: 1px solid #000000;
+        outline: none;
+        text-align: center;
+        height: 1.5em;
+        background-color: transparent;
+        margin: 0 0.6em;
+    }
+
+    .tc-modal-btn{
+
+        background-color: darken($color-blue, 10%);
+        color: #ffffff;
+        padding: 0.3em 0.6em;
+        border: none;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .tc-plot{
+
+        background-color: #efefef;
+        border: 1px solid #cccccc;
+        box-shadow: rgba(0,0,0,0.15) 0px 0px 5px;
+        margin: 0 0 1em;
+
+        .tc-conf-sec{
+
+            padding: 0.8em 0;
+
+            &:nth-child(even){
+
+                background-color: #ffffff;
+            }
+        }
+
+        .tc-conf-label{
+
+            margin: 0;
+            padding: 0;
+        }
+
+        .tc-plot-heading{
+
+            margin: 0;
+        }
+    }
+
+    .modal-head{
+
+        height: 12%;
+        overflow: hidden;
+    }
+
+    .modal-body{
+
+        box-sizing: border-box;
+        padding: 1.5em 0;
+        height: 76%;
+        overflow: auto;
+        background-color: #ffffff;
+    }
+
+    .modal-foot{
+
+        height: 12%;
+        overflow: hidden;
+    }
 
     .tc-close-btn{
 
         position: absolute;
         top: 5px;
         right: 5px;
-    }
-
-    .tc-modal-title{
-
-        text-align: center;
-        margin: 0.5em 0 1em;
-    }
-
-    .tc-plot{
-
-        .tc-plot-heading{
-
-            background-color: #efefef;
-            padding: 0.5em;
-            line-height: 1;
-        }
-
-        .tc-plot-config{
-
-            .tc-config-label{
-
-                margin: 0;
-
-                &:before{
-
-                    content: "";
-                    display: inline-block;
-                    width: 1em;
-                    height: 1em;
-                    background-color: #efefef;
-                    margin-right: 0.5em;
-                    box-shadow: rgba(0,0,0,0.3) 0px 3px 5px;
-                }
-            }
-
-            .tc-config-input{
-
-                margin-bottom: 0.5em;
-
-                .tc-user-input{
-
-                    margin-left: 1em;
-                    border: 1px solid #aaaaaa;
-                    height: 2em;
-                    padding: 0.4em;
-                    outline: none;
-                }
-            }
-        }
     }
 }
