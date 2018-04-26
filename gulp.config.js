@@ -23,7 +23,8 @@ module.exports = function(){
             sass: 'src/assets/scss/**/*.scss',
             images: 'src/assets/images/**/*',
             fonts: 'src/assets/fonts/**/*',
-            indexHTML: 'src/index.html'
+            indexHTML: 'src/index.html',
+            otherFiles: ['src/chart-options-modal.html']
         },
         server: {
 

@@ -176,6 +176,15 @@ gulp.task('copy-images', ['clear'], function(){
 });
 
 //
+// Copies other files.
+gulp.task('copy-other-files', ['clear'], function(){
+
+    return gulp.src(config.files.otherFiles, {base: 'src'})
+        .pipe(gulp.dest(config.directories.build))
+    ;
+});
+
+//
 // Copies fonts to build directory.
 gulp.task('copy-fonts', ['clear'], function(){
     
@@ -186,7 +195,7 @@ gulp.task('copy-fonts', ['clear'], function(){
 
 //
 // Creates new application build.
-gulp.task('build', ['clear', 'compile-sass', 'inject-app-files', 'compile-app', 'copy-images', 'copy-fonts'], function(){
+gulp.task('build', ['clear', 'compile-sass', 'inject-app-files', 'compile-app', 'copy-images', 'copy-fonts', 'copy-other-files'], function(){
 
     return del(config.directories.temp);
 });
