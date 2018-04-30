@@ -22,6 +22,7 @@ _tc.value('techIndicators', [
     {value: 'momentum', label: 'Momentum', args: []},
     {value: 'mma', label: 'Modified Moving Average', args: []},
     {value: 'roc', label: 'Rate of change', args: [{label: 'Period', value: '20'}]},
+    {value: 'rocroc', label: 'ROC(ROC(VALUE))', custom: true, args: [{label: 'Period', value: '20'}]},
     {value: 'dmi', label: 'Directional Movement Index', args: []},
     {value: 'rsi', label: 'Relative Strength Index (RSI)', args: []},
     {value: 'ema', label: 'Exponential Moving Average (EMA)', args: []},
@@ -40,6 +41,32 @@ _tc.value('techIndicators', [
     {value: 'psar', label: 'Parabolic SAR (PSAR)', args: []},
     {value: 'stochastic', label: 'Stochastic', args: []},
 ]);
+
+
+_tc.value('customIndicators', {
+
+    // Returns new mapping.
+    'rocroc': function(dataTable, mapping, indicatorRef){
+
+        var computer1 = dataTable.createComputer(mapping);
+        mapping = null;
+        var context = anychart.math.roc.initContext(indicatorRef.args[0].value);
+        computer1.setContext(context);
+        computer1.setStartFunction(anychart.math.roc.startFunction);
+        computer1.setCalculationFunction(anychart.math.roc.calculationFunction);
+
+        var mapping1 = dataTable.mapAs({value: computer1.addOutputField("result")});
+        
+        computer1 = null;
+
+        var computer2 = dataTable.createComputer(mapping1);
+        computer2.setContext(context);
+        computer2.setStartFunction(anychart.math.roc.startFunction);
+        computer2.setCalculationFunction(anychart.math.roc.calculationFunction);
+
+        return dataTable.mapAs({value: computer2.addOutputField("result")});
+    }
+});
 
 _tc.run([
 
@@ -254,8 +281,8 @@ _tc.factory('tickerCoinSrvc', [
 // Any chart directive.
 _tc.directive('tcAnyChart', [
 
-            'tickerCoinSrvc','$rootScope','chartOptionsModal',
-    function(tickerCoinSrvc , $rootScope , chartOptionsModal){
+            'tickerCoinSrvc','$rootScope','chartOptionsModal','customIndicators',
+    function(tickerCoinSrvc , $rootScope , chartOptionsModal , customIndicators){
 
         var _DEFAULT_SINCE_DATE = new Date();
         _DEFAULT_SINCE_DATE.setDate(_DEFAULT_SINCE_DATE.getDate()-1);
@@ -314,11 +341,19 @@ _tc.directive('tcAnyChart', [
 
                         angular.forEach(plotSett.series, function(seriesObj){
 
-                            chart.chart.plot(i)[seriesObj.value](chart.mapping, seriesObj.args[0]?seriesObj.args[0].value:undefined, seriesObj.args[1]?seriesObj.args[1].value:undefined);
+                            if(seriesObj.custom){
+
+                                var customMapping = customIndicators[seriesObj.value](chart.dataTable, chart.mapping, seriesObj);
+                                chart.chart.plot(i).line(customMapping).name(seriesObj.value+'('+ (seriesObj.args.length?seriesObj.args[0].value:'') +')');
+                            }
+                            else{
+
+                                chart.chart.plot(i)[seriesObj.value](chart.mapping, seriesObj.args[0]?seriesObj.args[0].value:undefined, seriesObj.args[1]?seriesObj.args[1].value:undefined);
+                            }
                         });
                     }
 
-                    chart.chart.title(chart.exchange + ' - ('+chart.market+')');
+                    chart.chart.title(chart.exchange + ' - (' + chart.market + ')');
                     chart.chart.container(chart.id);
                     chart.chart.draw();
                 }
@@ -382,6 +417,7 @@ _tc.directive('tcAnyChart', [
 
                             chart.mapping = mapping;
                             chart.volume = _getSummedUpVolume(OHLCVData);
+                            chart.dataTable = table;
 
                             _drawChart(chart);
                         })
