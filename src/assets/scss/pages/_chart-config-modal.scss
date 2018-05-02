@@ -28,6 +28,7 @@
     background-color: #000000;
     box-shadow: rgba(#000000, 0.5) 0px 0px 12px;
     box-sizing: border-box;
+    border: 2px solid #404040;
 
     .tc-modal-title{
 
@@ -37,13 +38,26 @@
         color: #ffffff;
     }
 
-    .tc-user-input{
+    select.tc-user-input{
 
         border: none;
         border-bottom: 1px solid #000000;
         outline: none;
         text-align: center;
         height: 1.5em;
+        background-color: transparent;
+        margin: 0 0.6em;
+    }
+
+    input.tc-user-input{
+
+        border: none;
+        border: 1px dashed #666666;
+        outline: none;
+        text-align: center;
+        height: 1.5em;
+        width: 8em;
+        padding: 0.8em;
         background-color: transparent;
         margin: 0 0.6em;
     }
@@ -60,19 +74,28 @@
 
     .tc-plot{
 
-        background-color: #efefef;
+        background-color: #ffffff;
         border: 1px solid #cccccc;
         box-shadow: rgba(0,0,0,0.15) 0px 0px 5px;
         margin: 0 0 1em;
 
+        .tc-plot-header{
+
+            background-color: #efefef;
+            padding: 0.8em 0;
+            box-shadow: rgba(#000000, 0.15) 0px 3px 5px;
+            border-bottom: 1px solid #cccccc;
+            margin-bottom: 0.8em;
+        }
+
         .tc-conf-sec{
 
-            padding: 0.8em 0;
+            padding: 0.6em 0;
 
-            &:nth-child(even){
+            // &:nth-child(even){
 
-                background-color: #ffffff;
-            }
+            //     background-color: #ffffff;
+            // }
         }
 
         .tc-conf-label{
@@ -84,6 +107,7 @@
         .tc-plot-heading{
 
             margin: 0;
+
         }
     }
 

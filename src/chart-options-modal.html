@@ -19,12 +19,15 @@
         <!-- Body -->
         <div class="modal-body">
             <div class="container-fluid">
-                <div class="row">
+                <div class="row align-items-center">
                     <div class="col-auto">
-                        <b>Chart Height (px)</b>
+                        <b>Chart Height</b>
                     </div>
                     <div>
-                        <input type="text" class="tc-user-input" ng-model="chartConfig.height">
+                        <input type="text" placeholder="eg: 600" class="tc-user-input" ng-model="chartConfig.height">
+                    </div>
+                    <div>
+                        <b>px</b>
                     </div>
                 </div>
 
@@ -32,69 +35,89 @@
 
                 <!-- Plot -->
                 <div class="tc-plot" ng-repeat="plot in chartConfig.plots">
-                    <div class="tc-conf-sec">
-                        <div class="container-fluid">
-                            <h3 class="tc-plot-heading">
-                                Plot #{{$index+1}}
-
-                                <div style="float: right; cursor: pointer;" ng-click="modalCtrl.removePlot(plot)" ng-if="$index>0">
-                                    <svg viewBox="0 0 1792 1792" style="height: 1em;"><path d="M704 1376v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm256 0v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm256 0v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm-544-992h448l-48-117q-7-9-17-11h-317q-10 2-17 11zm928 32v64q0 14-9 23t-23 9h-96v948q0 83-47 143.5t-113 60.5h-832q-66 0-113-58.5t-47-141.5v-952h-96q-14 0-23-9t-9-23v-64q0-14 9-23t23-9h309l70-167q15-37 54-63t79-26h320q40 0 79 26t54 63l70 167h309q14 0 23 9t9 23z" fill="red"/></svg>
-                                </div>
-                            </h3>
-                        </div>
-                    </div>
-
-                    <div class="tc-conf-sec">
-                        <div class="container-fluid">
-                            <div class="row no-gutters align-items-center">
-                                <div><h5 class="tc-conf-label">Height (%):</h5></div>
-                                <div>
-                                    <input type="text" placeholder="Plot height" class="tc-user-input" ng-model="plot.height">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Series -->
-                    <div class="tc-conf-sec" ng-repeat="s in plot.series">
+                    <div class="tc-plot-header">
                         <div class="container-fluid">
                             <div class="row align-items-center">
-                                <div class="col-auto">{{$index+1}}.</div>
-                                <div class="col-auto">{{s.label}}</div>
-                                <div class="col-auto" ng-repeat="arg in s.args">
+                                <div class="col-auto">
+                                    <h3 class="tc-plot-heading">
+                                        Plot # {{$index+1}}
+                                    </h3>
+                                </div>
+
+                                <div class="col-auto">
                                     <div class="row no-gutters align-items-center">
-                                        <div>{{arg.label}}:</div>
+                                        <div><small>Height:</small></div>
+                                        <div>
+                                            <input type="number" placeholder="AUTO_SET" class="tc-user-input" ng-model="plot.height">
+                                        </div>
+                                        <div><h5 class="tc-conf-label">%</h5></div>
+                                        <div ng-if="plot.height">
+                                            <button style="margin-left: 0.5em;" ng-click="plot.height = angular.noop()">Auto Set Height</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col"></div>
+                                <div class="col-auto">
+                                    <div style="cursor: pointer;" ng-click="modalCtrl.removePlot(plot)" ng-if="$index>0">
+                                        <svg viewBox="0 0 1792 1792" style="height: 1em;"><path d="M704 1376v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm256 0v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm256 0v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm-544-992h448l-48-117q-7-9-17-11h-317q-10 2-17 11zm928 32v64q0 14-9 23t-23 9h-96v948q0 83-47 143.5t-113 60.5h-832q-66 0-113-58.5t-47-141.5v-952h-96q-14 0-23-9t-9-23v-64q0-14 9-23t23-9h309l70-167q15-37 54-63t79-26h320q40 0 79 26t54 63l70 167h309q14 0 23 9t9 23z" fill="red"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Indicators -->
+                    <div class="tc-conf-sec" ng-repeat="indicator in plot.indicators">
+                        <div class="container-fluid">
+                            <div class="row align-items-center">
+                                <div class="col-1">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col">
+                                            <span>{{$index+1}}.</span>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div style="cursor: pointer;" ng-click="modalCtrl.removeIndicator(indicator,plot)">
+                                                <svg viewBox="0 0 1792 1792" style="height: 1em;"><path d="M1600 736v192q0 40-28 68t-68 28h-1216q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h1216q40 0 68 28t28 68z" fill="red"/></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <select class="tc-user-input" ng-model="indicator.key" ng-change="modalCtrl.updateIndicator(indicator,indicator.key)">
+                                        <option ng-value="indKey" ng-repeat="(indKey, indObj) in indicators">{{indObj.label}}</option>
+                                    </select>
+                                </div>
+                                <div class="col-auto" ng-repeat="arg in indicator.indicatorObject.args">
+                                    <div class="row no-gutters align-items-center">
+                                        <div><small>{{arg.label}}:</small></div>
                                         <div>
                                             <input type="text" class="tc-user-input" ng-model="arg.value">
                                         </div>
                                     </div> 
                                 </div>
-                                <div class="col"></div>
-                                <div class="col-auto">
-                                    <div style="cursor: pointer;" ng-click="modalCtrl.removeSeries(s,plot)">
-                                            <svg viewBox="0 0 1792 1792" style="height: 1em;"><path d="M704 1376v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm256 0v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm256 0v-704q0-14-9-23t-23-9h-64q-14 0-23 9t-9 23v704q0 14 9 23t23 9h64q14 0 23-9t9-23zm-544-992h448l-48-117q-7-9-17-11h-317q-10 2-17 11zm928 32v64q0 14-9 23t-23 9h-96v948q0 83-47 143.5t-113 60.5h-832q-66 0-113-58.5t-47-141.5v-952h-96q-14 0-23-9t-9-23v-64q0-14 9-23t23-9h309l70-167q15-37 54-63t79-26h320q40 0 79 26t54 63l70 167h309q14 0 23 9t9 23z" fill="red"/></svg>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
-                    <!-- /Series -->
+                    <!-- /Indicators -->
 
+                    <!-- Add indicator -->
                     <div class="tc-conf-sec">
+
                         <div class="container-fluid">
-                            <div class="row no-gutters align-items-center">
+                            <div class="row">
+                                <div class="col-1"></div>
                                 <div class="col-auto">
-                                    <select class="tc-user-input" ng-model="seriesToAdd">
-                                        <option value="">--Choose Series--</option>
-                                        <option ng-value="ind" ng-repeat="ind in indicators">{{ind.label}}</option>
-                                    </select>
-                                </div>
-                                <div class="col-auto">
-                                    <button class="tc-modal-btn" ng-click="modalCtrl.addSeries(seriesToAdd,plot)">+ Add</button>
+
+                                    <button class="tc-icon-button" ng-click="modalCtrl.addIndicator(plot)">
+                                        <svg viewBox="0 0 1792 1792"><path fill="green" d="M1600 736v192q0 40-28 68t-68 28h-416v416q0 40-28 68t-68 28h-192q-40 0-68-28t-28-68v-416h-416q-40 0-68-28t-28-68v-192q0-40 28-68t68-28h416v-416q0-40 28-68t68-28h192q40 0 68 28t28 68v416h416q40 0 68 28t28 68z"/></svg>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <!-- /Add indicator -->
+
                 </div>
                 <!-- /plot -->
             </div>
@@ -107,10 +130,10 @@
                     <div class="col">
                         <div class="row align-items-center">
                             <div class="col-auto">
-                                <button class="tc-modal-btn" ng-click="modalCtrl.addPlot()">+ Add Additional Plot</button>
+                                <button class="tc-modal-btn" ng-click="modalCtrl.addPlot()">+ Add another <b>plot</b></button>
                             </div>
                             <div class="col"></div>
-                            <div class="col-auto" ng-if="!modalCtrl.actualConfigRef" ng-init="modalCtrl.rememberConfig = true">
+                            <div class="col-auto" ng-if="!modalCtrl.actualConfigRef" ng-init="modalCtrl.rememberConfig = false">
                                 <div class="row no-gutters">
                                     <div class="col-auto">
                                         <input type="checkbox" ng-model="modalCtrl.rememberConfig">

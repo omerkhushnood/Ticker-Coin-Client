@@ -296,38 +296,30 @@ body{
     }
 }
 
+.tc-icon-button{
 
+    background-color: #ffffff;
+    line-height: 1.5;
+    padding: 0.5em;
+    box-sizing: content-box;
+    width: 1.5em;
+    height: 1.5em;
+    //border: 1px solid #000000;
+    border: none;
+    border-radius: (1.5*2)+em;
+    transition: all 0.2s;
+    cursor: pointer;
+    outline: none;
+    box-shadow: rgba(#000000, 0.3) 0px 2px 5px;
 
+    svg{
 
-.tc-warning{
+        width: 1.4em;
+        height: 1.4em;
+    }
 
-    position: fixed;
-    bottom: 0px;
-    left: 0px;
-    width: 100%;
-    background-color: $color-yellow;
-    color: #000000;
-    text-align: center;
-    font-size: 0.95em;
-    padding: 1em 1em;
-    font-weight: 700;
+    &:hover{
 
-    .tc-close-icon{
-
-        display: inline-block;
-        position: absolute;
-        right: 1em;
-        background-color: $color-red;
-        border: 2px solid #ffffff;
-        border-radius: 1000px;
-        width: 1.8em;
-        height: 1.8em;
-        line-height: 1.8em;
-        cursor: pointer;
-
-        svg{
-
-            width: 1em;
-        }
+        box-shadow: rgba(#000000, 0.3) 0px 4px 6px;
     }
 }

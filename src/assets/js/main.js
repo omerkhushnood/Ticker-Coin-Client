@@ -14,33 +14,33 @@ _tc.constant('API_HOST', 'http://169.60.157.140:3001');
 
 //
 // Technical indicators.
-_tc.value('techIndicators', [
+_tc.value('techIndicators', {
 
-    {value: 'candlestick', label: 'Candle Stick', args: []},
-    {value: 'sma', label: 'SMA', args: []},
-    {value: 'ama', label: 'Adaptive Moving Average', args: []},
-    {value: 'momentum', label: 'Momentum', args: []},
-    {value: 'mma', label: 'Modified Moving Average', args: []},
-    {value: 'roc', label: 'Rate of change', args: [{label: 'Period', value: '20'}]},
-    {value: 'rocroc', label: 'ROC(ROC(VALUE))', custom: true, args: [{label: 'Period', value: '20'}]},
-    {value: 'dmi', label: 'Directional Movement Index', args: []},
-    {value: 'rsi', label: 'Relative Strength Index (RSI)', args: []},
-    {value: 'ema', label: 'Exponential Moving Average (EMA)', args: []},
-    {value: 'bbands', label: 'Bollinger Bands', args: []},
-    {value: 'adl', label: 'Accumulation Distribution Line (ADL)', args: []},
-    {value: 'aroon', label: 'Aroon', args: []},
-    {value: 'atr', label: 'Average True Range', args: []},
-    {value: 'bbandsB', label: 'Bollinger Bands %B', args: []},
-    {value: 'bbandsWidth', label: 'Bollinger Bands Width', args: []},
-    {value: 'cmf', label: 'Chaikin Money Flow (CMF)', args: []},
-    {value: 'cho', label: 'Chaikin Oscillator (CHO)', args: []},
-    {value: 'cci', label: 'Commodity Channel Index (CCI)', args: []},
-    {value: 'kdj', label: 'KDJ', args: [{label: 'Period', value: '10'}]},
-    {value: 'mfi', label: 'Money Flow Index (MFI)', args: []},
-    {value: 'macd', label: 'Moving Average Convergence/Divergence', args: []},
-    {value: 'psar', label: 'Parabolic SAR (PSAR)', args: []},
-    {value: 'stochastic', label: 'Stochastic', args: []},
-]);
+    'candlestick': {value: 'candlestick', label: 'Candle Stick', args: []},
+    'sma': {value: 'sma', label: 'SMA', args: []},
+    'ama': {value: 'ama', label: 'Adaptive Moving Average', args: []},
+    'momentum': {value: 'momentum', label: 'Momentum', args: []},
+    'mma': {value: 'mma', label: 'Modified Moving Average', args: []},
+    'roc': {value: 'roc', label: 'Rate of change', args: [{label: 'Period', value: '20'}]},
+    'rocroc': {value: 'rocroc', label: 'ROC(ROC)', custom: true, args: [{label: 'Period', value: '20'}]},
+    'dmi': {value: 'dmi', label: 'Directional Movement Index', args: []},
+    'rsi': {value: 'rsi', label: 'Relative Strength Index (RSI)', args: []},
+    'ema': {value: 'ema', label: 'Exponential Moving Average (EMA)', args: []},
+    'bbands': {value: 'bbands', label: 'Bollinger Bands', args: []},
+    'adl': {value: 'adl', label: 'Accumulation Distribution Line (ADL)', args: []},
+    'aroon': {value: 'aroon', label: 'Aroon', args: []},
+    'atr': {value: 'atr', label: 'Average True Range', args: []},
+    'bbandsB': {value: 'bbandsB', label: 'Bollinger Bands %B', args: []},
+    'bbandsWidth': {value: 'bbandsWidth', label: 'Bollinger Bands Width', args: []},
+    'cmf': {value: 'cmf', label: 'Chaikin Money Flow (CMF)', args: []},
+    'cho': {value: 'cho', label: 'Chaikin Oscillator (CHO)', args: []},
+    'cci': {value: 'cci', label: 'Commodity Channel Index (CCI)', args: []},
+    'kdj': {value: 'kdj', label: 'KDJ', args: [{label: 'Period', value: '10'}]},
+    'mfi': {value: 'mfi', label: 'Money Flow Index (MFI)', args: []},
+    'macd': {value: 'macd', label: 'Moving Average Convergence/Divergence', args: []},
+    'psar': {value: 'psar', label: 'Parabolic SAR (PSAR)', args: []},
+    'stochastic': {value: 'stochastic', label: 'Stochastic', args: []},
+});
 
 
 _tc.value('customIndicators', {
@@ -48,23 +48,45 @@ _tc.value('customIndicators', {
     // Returns new mapping.
     'rocroc': function(dataTable, mapping, indicatorRef){
 
+        // Start 1st Roc
         var computer1 = dataTable.createComputer(mapping);
-        mapping = null;
         var context = anychart.math.roc.initContext(indicatorRef.args[0].value);
         computer1.setContext(context);
         computer1.setStartFunction(anychart.math.roc.startFunction);
         computer1.setCalculationFunction(anychart.math.roc.calculationFunction);
 
-        var mapping1 = dataTable.mapAs({value: computer1.addOutputField("result")});
-        
-        computer1 = null;
+        var mapping1 = dataTable.mapAs({roc1Value: computer1.addOutputField("result")});
+        // End 1st Roc
 
+        // Start 2nd Roc
         var computer2 = dataTable.createComputer(mapping1);
-        computer2.setContext(context);
+        var context2 = anychart.math.roc.initContext(indicatorRef.args[0].value);
+        computer2.setContext(context2);
         computer2.setStartFunction(anychart.math.roc.startFunction);
-        computer2.setCalculationFunction(anychart.math.roc.calculationFunction);
+        computer2.setCalculationFunction(function(row, context){
 
-        return dataTable.mapAs({value: computer2.addOutputField("result")});
+            var currValue = row.get('roc1Value');
+            currValue = Number(currValue);
+            var missing = Number.isNaN(currValue);
+            if (!missing)
+                context.jc.enqueue(currValue);
+            
+            var result;
+            // context.js is context.queue
+            // context.Pb is context.period
+            if (missing || context.jc.getLength() <= context.Pb) {
+                result = NaN;
+            } else {
+                var nPeriodsAgo = (context.jc.get(0));
+                var currentROC = (context.jc.get(-1));
+                result = (currentROC - nPeriodsAgo) / (nPeriodsAgo * 100);
+            }
+            row.set('result2', result);
+            console.log(currValue);
+        });
+        // End 2nd Roc
+
+        return dataTable.mapAs({value: computer2.addOutputField("result2")});
     }
 });
 
@@ -84,12 +106,11 @@ _tc.run([
                 plots: [{
 
                     height: null,
-                    series: [
+                    indicators: [
 
                         {
-                            label: 'Candle Stick',
-                            value: 'candlestick',
-                            args: []
+                            key: 'candlestick',
+                            indicatorObject: {value: 'candlestick', label: 'Candle Stick', args: []}
                         }
                     ]
                 }]
@@ -124,19 +145,27 @@ _tc.controller('ChartOptionsModalCtrl', [
             chartOptionsModal.deactivate();
         };
 
-        vm.addSeries = function(series, plot){
+        vm.addIndicator = function(plot){
 
-            if(!series || !plot) return;
-            plot.series.push(angular.copy(series));
+            plot.indicators.push({
+
+                key: 'roc',
+                indicatorObject: angular.copy(techIndicators['roc'])
+            });
         };
 
-        vm.removeSeries = function(series, plot){
+        vm.updateIndicator = function(indicator, key){
 
-            if(!series || !plot) return;
-            var index = plot.series.indexOf(series);
+            indicator.key = key;
+            indicator.indicatorObject = angular.copy(techIndicators[key]);
+        };
 
-            if(index>-1)
-                plot.series.splice(index, 1);
+        vm.removeIndicator = function(indicator, plot){
+
+            var index = plot.indicators.indexOf(indicator);
+
+            if(index > -1)
+                plot.indicators.splice(index, 1);
         };
 
         vm.addPlot = function(){
@@ -144,7 +173,7 @@ _tc.controller('ChartOptionsModalCtrl', [
             $scope.chartConfig.plots.push({
 
                 height: 30,
-                series: []
+                indicators: []
             });
         };
 
@@ -164,7 +193,7 @@ _tc.controller('ChartOptionsModalCtrl', [
             $rootScope.$broadcast('tc.apply-charts-config', $scope.chartConfig, actualConfigRef);
             
             if(!actualConfigRef)
-                $rootScope.globalChartConfig = $scope.chartConfig;
+                $rootScope.globalChartConfig = angular.copy($scope.chartConfig);
 
             vm.closeModal();
         };
@@ -208,6 +237,13 @@ _tc.factory('tcStorage', [
 
             var configString = storage.getItem('tc_chart_config');
             var config = angular.fromJson(configString);
+
+            // Temporary
+            if(config && config.plots.length && !angular.isArray(config.plots[0].indicators)){
+
+                config = null;
+                storage.removeItem('tc_chart_config');
+            }
 
             return config;
         }
@@ -328,6 +364,7 @@ _tc.directive('tcAnyChart', [
                 function _drawChart(chart){
 
                     chart.chart.dispose();
+                    chart.chart = null;
                     chart.chart = anychart.stock();
 
                     for(var i=0; i<chart.config.plots.length; i++){
@@ -336,19 +373,18 @@ _tc.directive('tcAnyChart', [
 
                         if(plotSett.height)
                             chart.chart.plot(i).height(plotSett.height+'%');
-                            
-                        //chart.chart.plot(i).removeAllSeries();
 
-                        angular.forEach(plotSett.series, function(seriesObj){
+                        angular.forEach(plotSett.indicators, function(indicator){
 
-                            if(seriesObj.custom){
+                            var indicatorObj = indicator.indicatorObject;
+                            if(indicatorObj.custom){
 
-                                var customMapping = customIndicators[seriesObj.value](chart.dataTable, chart.mapping, seriesObj);
-                                chart.chart.plot(i).line(customMapping).name(seriesObj.value+'('+ (seriesObj.args.length?seriesObj.args[0].value:'') +')');
+                                var customMapping = customIndicators[indicatorObj.value](chart.dataTable, chart.mapping, indicatorObj);
+                                chart.chart.plot(i).line(customMapping).name(indicatorObj.value+'('+ (indicatorObj.args.length?indicatorObj.args[0].value:'') +')');
                             }
                             else{
 
-                                chart.chart.plot(i)[seriesObj.value](chart.mapping, seriesObj.args[0]?seriesObj.args[0].value:undefined, seriesObj.args[1]?seriesObj.args[1].value:undefined);
+                                chart.chart.plot(i)[indicatorObj.value](chart.mapping, indicatorObj.args[0]?indicatorObj.args[0].value:undefined, indicatorObj.args[1]?indicatorObj.args[1].value:undefined);
                             }
                         });
                     }
